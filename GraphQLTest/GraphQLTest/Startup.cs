@@ -1,15 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using GraphiQl;
+using GraphQL;
+using GraphQL.Server;
+using GraphQL.Server.Ui.Playground;
+using GraphQL.Types;
+using GraphQLTest.Queries;
+using GraphQLTest.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Schemas.GraphQLTest;
 
 namespace GraphQLTest
 {
@@ -25,6 +26,21 @@ namespace GraphQLTest
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IInMemoryRepository, InMemoryRepository>();
+            
+            services.AddScoped<SchemaCar>();
+
+            services.AddSingleton<QueryCarBrand>();
+
+            //Sche is missing it
+            services.AddScoped<IDependencyResolver> (s => new FuncDependencyResolver(s.GetRequiredService));
+
+            services.AddGraphQL(options =>
+            {
+                options.EnableMetrics = true;
+                options.ExposeExceptions = true;
+            });
+
             services.AddControllers();
         }
 
@@ -35,6 +51,10 @@ namespace GraphQLTest
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseGraphQL<SchemaCar>();
+            app.UseGraphQLPlayground(new GraphQLPlaygroundOptions());
+            
 
             app.UseHttpsRedirection();
 
