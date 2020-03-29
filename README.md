@@ -3,15 +3,17 @@
 - https://github.com/mmacneil/ASPNetCoreGraphQL
 - https://www.codemag.com/Article/1909061/Intro-to-GraphQL-for-.NET-Developers-Schema-Resolver-and-Query-Language
 - https://www.red-gate.com/simple-talk/dotnet/net-development/getting-started-with-graphql-in-asp-net/
-- 
+- https://code-maze.com/graphql-aspnetcore-basics/
 
-### work in progress. Current setup of startup.cs is not behaving 
+### work in progress. Currently I got the setup of startup.cs behaving and the below basic query running
 
 by running IIS Express the endpoint to run queries is: https://localhost:44320/ui/playground
 
+```
 query{
    carbrands
   {
     name    
   }
 }
+```
