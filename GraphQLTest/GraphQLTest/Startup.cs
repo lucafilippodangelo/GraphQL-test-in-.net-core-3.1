@@ -1,12 +1,15 @@
 using GraphiQl;
 using GraphQL;
 using GraphQL.Server;
+using GraphQL.Server.Ui.GraphiQL;
 using GraphQL.Server.Ui.Playground;
 using GraphQL.Types;
+using GraphQLTest.DomainObject;
 using GraphQLTest.Queries;
 using GraphQLTest.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,20 +29,32 @@ namespace GraphQLTest
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
             services.AddSingleton<IInMemoryRepository, InMemoryRepository>();
-            
+
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
+
+
+            services.AddScoped<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
             services.AddScoped<SchemaCar>();
 
             services.AddSingleton<QueryCarBrand>();
 
-            //Sche is missing it
-            services.AddScoped<IDependencyResolver> (s => new FuncDependencyResolver(s.GetRequiredService));
+            services.AddSingleton<CarBrandGraphType>();
+
+            
+
 
             services.AddGraphQL(options =>
             {
                 options.EnableMetrics = true;
-                options.ExposeExceptions = true;
-            });
+                options.ExposeExceptions = false;
+            }).AddGraphTypes(ServiceLifetime.Scoped);
+
+
 
             services.AddControllers();
         }
@@ -52,10 +67,6 @@ namespace GraphQLTest
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseGraphQL<SchemaCar>();
-            app.UseGraphQLPlayground(new GraphQLPlaygroundOptions());
-            
-
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -66,6 +77,9 @@ namespace GraphQLTest
             {
                 endpoints.MapControllers();
             });
+
+            app.UseGraphQL<SchemaCar>();
+            app.UseGraphQLPlayground(options: new GraphQLPlaygroundOptions());
         }
     }
 }

@@ -8,15 +8,16 @@ using System.Threading.Tasks;
 
 namespace GraphQLTest.Queries
 {
-    public class QueryCarBrand : ObjectGraphType
+    public class QueryCarBrand : ObjectGraphType<object>
     {
         public QueryCarBrand(IInMemoryRepository anInMemoryRepository) 
         {
+            Name = "QueryCarBrand";
             Field<ListGraphType<CarBrandGraphType>>(
                 "carbrands",
                  Description = "a description", 
-                 resolve: context => anInMemoryRepository.GetAllCarBrandAndModels()
-                );
+                 resolve: (context) => anInMemoryRepository.GetAllCarBrandAndModels());
+
         }
     }
 }
